@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0.32
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./mysql-socket:/var/run/mysqld 
+    environment:
+      - MYSQL_ROOT_PASSWORD=merchantservices_root_password
+      - MYSQL_DATABASE=merchant_service
+      - MYSQL_USER=merchant_service_user
+      - MYSQL_PASSWORD=merchant_Service@123
+    ports:
+      - "3306:3306"
+    networks:
+      - merchantservices_network
+
+  web:
+    image: python:3.8
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+      - MYSQL_DATABASE=merchant_service
+      - MYSQL_USER=merchant_service_user
+      - MYSQL_PASSWORD=merchant_Service@123
+      - MYSQL_HOST=localhost
+    networks:
+      - merchantservices_network
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+
+
+networks:
+  merchantservices_network:
+    driver: bridge
